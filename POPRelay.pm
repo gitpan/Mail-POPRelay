@@ -6,7 +6,7 @@ use vars qw[$VERSION @ISA ];
 
 use constant PRESERVE_MESSAGE => "# Above configuration will be preserved by POPRelay.\n";
 
-$VERSION = '1.0.0';
+$VERSION = '1.0.1';
 @ISA     = qw[Mail::Object ];
 
 $Mail::POPRelay::DEBUG = 0;
@@ -203,7 +203,7 @@ One of the main differences between this relay server and others is that
 neither modification of the POP server or mail program is needed.  This
 software should integrate seamlessly given the correct agent is provided.
 Each agent possesses the ability to specify certain variables in order to create
-a custom taylored relay agent per your servers setup.  Here is a list of the
+a custom tailored relay agent per your servers setup.  Here is a list of the
 available options and their descriptions:
 
 	mailLogFile           
@@ -279,7 +279,7 @@ use vars qw[@ISA ];
 2) Create a configuration for the agent.
 
 Each agent should work w/ specific POP and Mail daemon configurations.
-To accomodate these configurations, each agent combines different 
+To accommodate these configurations, each agent combines different 
 options described above in DESCRIPTION.
 
 As a good foundation to get started, lets re-create the existing generic iPOP3 / Sendmail 

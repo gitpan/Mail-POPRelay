@@ -2,7 +2,9 @@ package Mail::Object;
 
 use strict;
 use Data::Dumper;
-use vars qw[$AUTOLOAD ];
+use vars qw[$AUTOLOAD $VERSION ];
+
+$VERSION = '0.0.2';
 
 # This is the base object class for all objects.
 

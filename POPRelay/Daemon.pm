@@ -3,10 +3,11 @@ package Mail::POPRelay::Daemon;
 use strict;
 use Mail::POPRelay;
 use File::Tail;
-use vars qw[@ISA ];
+use vars qw[@ISA $VERSION ];
 use POSIX qw[setsid ];
 
-@ISA = qw[Mail::POPRelay ];
+@ISA     = qw[Mail::POPRelay ];
+$VERSION = '0.1.0';
 
 
 # trap signal handling

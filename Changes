@@ -5,7 +5,7 @@ Revision history for Perl extension Mail::POPRelay.
 		- specific documentation on a per module basis
 	DONE
 		- original version created
-			`- ipop3d compatiblity
+			`- ipop3d compatibility
 			`- cleanup script
 			`- poprelay module
 			`- daemon agent
@@ -52,7 +52,7 @@ Revision history for Perl extension Mail::POPRelay.
 		- relay database support
 	DONE
 		- optionally restart mail server
-		- added documenatation
+		- added documentation
 		- fixed code ref bug in signal handler (thanks John!)
 
 
@@ -64,7 +64,7 @@ Revision history for Perl extension Mail::POPRelay.
 		- File::Tail support
 			`- fixed zombied tail processes
 		- relay database support
-		- added more complete documenatation
+		- added more complete documentation
 
 
 1.0.0 Tue Nov 13 17:19:28 PST 2001
@@ -75,6 +75,14 @@ Revision history for Perl extension Mail::POPRelay.
 		- poprelay_ipop3d now offers better support
 		- added poprelay_vpopd agent
 		- added more complete documentation
+	
+1.0.1 Fri Dec 28 23:39:48 PST 2001
+	TODO
+		- config file for all options
+		- minimize resources
+	DONE
+		- Added version information for all modules (per CPAN)
+		- Fixed misspelling
 	
 
 $Id: Changes,v 1.5 2001/11/25 00:27:59 keith Exp $

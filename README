@@ -2,16 +2,15 @@ NAME
     Mail::POPRelay - Dynamic Relay Access Control
 
 DESCRIPTION
-    Mobile POP Relay is designed as a framework to support relaying through
-    many different types of POP and email servers. This software is useful
-    for mobile users and is fully compatible with virtual domains.
+    Mobile POP Relay is designed as a framework to support relaying through many different
+    types of POP and email servers. This software is useful for mobile users and is fully
+    compatible with virtual domains.
 
-    One of the main differences between this relay server and others is that
-    neither modification of the POP server or mail program is needed. This
-    software should integrate seamlessly given the correct agent is
-    provided. Each agent possesses the ability to specify certain variables
-    in order to create a custom tailored relay agent per your servers setup.
-    Here is a list of the available options and their descriptions:
+    One of the main differences between this relay server and others is that neither
+    modification of the POP server or mail program is needed. This software should integrate
+    seamlessly given the correct agent is provided. Each agent possesses the ability to
+    specify certain variables in order to create a custom tailored relay agent per your
+    servers setup. Here is a list of the available options and their descriptions:
 
             mailLogFile           
                     Absolute location of the mail log file to monitor (tail).
@@ -46,7 +45,7 @@ DESCRIPTION
                     A spool directory for creating program related relay tracking
                     files.
                     Defaulted to '/var/spool/poprelay'
-                
+                    
             mailRelayFile
                     Absolute location of the mail access relay file.
                     No default value.
@@ -59,8 +58,8 @@ DESCRIPTION
     Use the SYNOPSIS to help create your own agents.
 
 SYNOPSIS
-    So how do I create my own agents? Simple. Create a file in the ./bin
-    directory for your agent and follow the instructions below.
+    So how do I create my own agents? Simple. Create a file in the ./bin directory for your
+    agent and follow the instructions below.
 
     1) Copy this header into your agent file:
 
@@ -82,21 +81,20 @@ SYNOPSIS
 
     2) Create a configuration for the agent.
 
-    Each agent should work w/ specific POP and Mail daemon configurations.
-    To accommodate these configurations, each agent combines different
-    options described above in DESCRIPTION.
+    Each agent should work w/ specific POP and Mail daemon configurations. To accommodate
+    these configurations, each agent combines different options described above in
+    DESCRIPTION.
 
-    As a good foundation to get started, lets re-create the existing generic
-    iPOP3 / Sendmail configuration that already exists in the ./bin
-    directory.
+    As a good foundation to get started, lets re-create the existing generic iPOP3 / Sendmail
+    configuration that already exists in the ./bin directory.
 
     Copy the below agent body into your agent file:
 
     ----- BEGIN AGENT BODY -----
 
-    my %options = ( mailRelayDirectory => '/var/spool/poprelay',
-    mailRelayPeriod => 86400, # in seconds mailLogRegExp =>
-    'ipop3d\[\d+\]:.+user=(\w+) host=.*\[(\d+\.\d+\.\d+\.\d+)\] nmsgs=',
+    my %options = ( mailRelayDirectory => '/var/spool/poprelay', mailRelayPeriod => 86400, #
+    in seconds mailLogRegExp => 'ipop3d\[\d+\]:.+user=(\w+) host=.*\[(\d+\.\d+\.\d+\.\d+)\]
+    nmsgs=',
 
             # redhat 7.0 w/ access db
             mailRelayFile         => '/etc/mail/access',
@@ -109,17 +107,16 @@ SYNOPSIS
 
     3) Modify / add or delete agent options
 
-    It may be necessary to change the relaying period. Simply modify the
-    value of "mailRelayPeriod" from 86400 to your own value.
+    It may be necessary to change the relaying period. Simply modify the value of
+    "mailRelayPeriod" from 86400 to your own value.
 
-    Maybe you aren't running a database compatible mail daemon. This might
-    require switching the value of "mailRelayIsDatabase" from 1 to 0 and
-    adding the option "mailProgramRestart => 1".
+    Maybe you aren't running a database compatible mail daemon. This might require switching
+    the value of "mailRelayIsDatabase" from 1 to 0 and adding the option "mailProgramRestart
+    => 1".
 
-    Modification of the mailLogRegExp option may be necessary. Scan your
-    mail log file for the POP authentication line and set a matching regular
-    expression for the mailLogRegExp value. The user name must end up in $1
-    and the relay host in $2.
+    Modification of the mailLogRegExp option may be necessary. Scan your mail log file for the
+    POP authentication line and set a matching regular expression for the mailLogRegExp value.
+    The user name must end up in $1 and the relay host in $2.
 
 METHODS
     $popRelay->wipeRelayDirectory();
