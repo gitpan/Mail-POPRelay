@@ -6,7 +6,7 @@ use vars qw[$VERSION @ISA ];
 
 use constant PRESERVE_MESSAGE => "# Above configuration will be preserved by POPRelay.\n";
 
-$VERSION = '2.0.0';
+$VERSION = '2.0.1';
 @ISA     = qw[Mail::Object ];
 
 $Mail::POPRelay::DEBUG = 0;
@@ -483,6 +483,11 @@ Verified and tested integration with the Exim mailer.
 =item Fuat Gozetepe <turk@lbox.org>
 
 Verified and tested integration with Slackware.
+
+=item Mike Polek <mike@pictage.com>
+
+Found a race condition in Daemon.pm where relaying information could have
+been lost.
 
 =back
 

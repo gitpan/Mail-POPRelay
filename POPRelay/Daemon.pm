@@ -59,12 +59,15 @@ sub __mainLoop {
 		adjustafter => 3,
 	) or die "Unable to tail $self->{'mailLogFile'}: $!";
 
-	my $line;
+	my($line, $flag);
 	while (defined($line = $fileTail->read())) {
 		if ($line =~ m|$self->{'mailLogRegExp'}|) {
 			# save processing cycles and exit early if possible
-			$self->generateRelayFile()
-				if ($self->cleanRelayDirectory() || $self->addRelayAddress($1, $2));
+			$flag = 0;
+			$flag = 1 if $self->addRelayAddress($1, $2);
+			$flag = 1 if $self->cleanRelayDirectory();
+			$self->generateRelayFile() if $flag;
+
 		}
 	}
 	$self->wipeRelayDirectory(); 

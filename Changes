@@ -102,4 +102,14 @@ Revision history for Perl extension Mail::POPRelay.
 		- Improved init script for Redhat based distributions
 	
 
+2.0.1 Wed Mar 27 21:41:44 PST 2002
+	TODO
+		- Separate directory for documentation
+		- Add more agents and config files (can't ever have too many!)
+	DONE
+		- Fixed a race condition in Daemon.pm where relaying information 
+		  could have been lost  (thanks Mike!)
+
+
+
 $Id: Changes,v 1.7 2002/02/13 07:13:51 keith Exp $
