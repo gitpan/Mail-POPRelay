@@ -18,6 +18,7 @@ Revision history for Perl extension Mail::POPRelay.
 	DONE
 		- cvs repository changes
 
+
 0.03 Thu Feb 15 19:51:49 PST 2001
 	TODO
 		- config file for all options
@@ -75,6 +76,7 @@ Revision history for Perl extension Mail::POPRelay.
 		- poprelay_ipop3d now offers better support
 		- added poprelay_vpopd agent
 		- added more complete documentation
+
 	
 1.0.1 Fri Dec 28 23:39:48 PST 2001
 	TODO
@@ -85,4 +87,19 @@ Revision history for Perl extension Mail::POPRelay.
 		- Fixed misspelling
 	
 
-$Id: Changes,v 1.5 2001/11/25 00:27:59 keith Exp $
+2.0.0 Mon Jan 21 21:21:53 PST 2002
+	TODO
+		- Separate directory for documentation
+		- Add more agents and config files (can't ever have too many!)
+	DONE
+		- Sending HUP to daemon reloads the config-file
+		- More abstract database creation and format methods
+		- Separate config files for various Unix distributions
+		- More efficient run time
+		- Revamped all forms of documentation
+		- Easier setup
+		- Better mail server support
+		- Improved init script for Redhat based distributions
+	
+
+$Id: Changes,v 1.7 2002/02/13 07:13:51 keith Exp $

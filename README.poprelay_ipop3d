@@ -1,16 +1,17 @@
 NAME
-    poprelay_ipop3d - POP Relay Daemon for Sendmail w/ IPOP3d
+    poprelay_ipop3d - Agent for Ipop3d
 
 SYNOPSIS
-    ./poprelay_ipop3d
+    ./poprelay_ipop3d config-file
 
 DESCRIPTION
-    Run this script to start the relay access daemon for Sendmail running
-    with an IPOP3d POP server. Subtle changes may be required depending on
-    your configuration.
+    This agent is suitable for working with the Ipop3d POP daemon.
+
+    Make sure to specify the correct config-file for your server configuration. Subtle
+    modifications may be necessary in the config-file depending on your server configuration.
 
 DIAGNOSTICS
-    die(). Will write to syslog eventually.
+    croak(). Will write to syslog eventually.
 
 AUTHOR
     Keith Hoerling <keith@hoerling.com>

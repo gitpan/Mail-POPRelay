@@ -9,6 +9,7 @@ WriteMakefile(
     'EXE_FILES'		=> [ qw(bin/poprelay_cleanup bin/poprelay_ipop3d bin/poprelay_vpopd) ],
     'PREREQ_PM'		=> {
         'POSIX'        => 0,
+	'Carp'         => 0,
 	'Data::Dumper' => 0,
 	'File::Tail'   => 0,
     }, # e.g., Module::Name => 1.1
@@ -40,4 +41,4 @@ README.poprelay_vpopd : bin/poprelay_vpopd
 ';
 }
 
-# $Id: Makefile.PL,v 1.3 2001/11/26 18:15:41 keith Exp $
+# $Id: Makefile.PL,v 1.2 2002/01/28 23:18:18 keith Exp $

@@ -2,55 +2,60 @@
 Mobile POP Relay Control - Install
 
 SYNOPSIS
-	1) Generate the Makefile
-		sh$ perl Makefile.PL
+	o Generate the Makefile
+		$ perl Makefile.PL
 
-	2) Run make
-		sh$ make
+	o Run make
+		$ make
 
-	3) Run install
-		sh$ make install
+	o Run install
+		$ make install
 
-	4) make test
-		sh$ make test
+	o Run test
+		$ make test
 
-	5) Install the poprealyd_cleanup script
-		sh$ perldoc /usr/bin/poprelayd_cleanup
+	o Install the poprealyd_cleanup script
+		$ perldoc /usr/bin/poprelayd_cleanup
 
-	6) Run the proper agent for your configuration (daemon)
+	o Chooose a config file in the ./conf directory
+
+	o Run an agent
 	
-		Depending on your configuration:
-	
-		a. Run one of the provided agents if they support your configuration
-			sh$ /usr/bin/poprelay_ipop3d 
+		a. Run one of the provided agents
+			$ /usr/bin/poprelay_ipop3d config-file
 			- or -
-			sh$ /usr/bin/poprelay_vpopd 
+			$ /usr/bin/poprelay_vpopd config-file
 
-		b. Create an agent if no existing agent supports your configuration
-			sh$ perldoc Mail::POPRelay
+			Note: Some modification of the supplied config files may be required
+			      to precisely match your configuration.  Please edit them accordingly.
+			      Furthermore, sending a HUP signal to a running agent will force
+			      it to reload its config-file.
 
-		   Please send all newly created agents to the author for
-		   incorporation into the next release.
+		b. Create an agent if no existing agent currently supports your POP server
+			$ perldoc Mail::POPRelay
 
-	7) Install an init script
+		   Send all newly created agents and config files to the author for incorporation into 
+		   the next release.
 
-		For RedHat based systems:
+	o Install an init script
 
-		sh$ edit ./bin/poprelayd
-		sh$ cp ./bin/poprelayd /etc/init.d/
+		a. For Redhat based systems:
 
-		For Other systems:
+			$ edit ./bin/poprelayd
+			$ cp ./bin/poprelayd /etc/init.d/
 
-		We don't currently provide an init script.
-		Please create your own and feel free to send it for
-		incorporation into the next release.
+		b. For other systems:
 
-	8) Create appropriate symlinks in your rc directories for 
-	   kill and start modes or use `chkconfig'
+			An init script is not currently provided.
+			Please create your own and feel free to send it for
+			incorporation into the next release.
+
+	o Create appropriate symlinks in your rc directories for 
+	  kill and start modes or use `chkconfig'
 
 
 AUTHOR
 	Keith Hoerling <keith@hoerling.com>
 
 
-$Id: INSTALL,v 1.2 2001/11/20 21:33:02 keith Exp $
+$Id: INSTALL,v 1.4 2002/02/13 04:30:35 keith Exp $

@@ -6,44 +6,34 @@ use Mail::POPRelay::Daemon;
 
 # main
 # ---------
-my %options = (
-	mailRelayDirectory    => '/var/spool/poprelay',
-	mailRelayPeriod       => 86400, # in seconds
-	mailLogRegExp         => 'vpop3d: \((\w+),(\d+\.\d+\.\d+\.\d+)\) Authenticated',
-	mailLogFile           => '/var/log/messages',
-
-	# Conectiva 7.0 w/ access db
-	mailRelayFile         => '/etc/mail/access',
-	mailRelayIsDatabase   => 1,
-	mailRelayDatabaseType => 'hash',
-
-	# Conectiva 7.0 w/o access db
-#	mailRelayFile         => '/etc/mail/ip_allow',
-#	mailProgramRestart => 1,
+my $popDaemon = new Mail::POPRelay::Daemon(
+	$ARGV[0],
+	{ mailLogRegExp => 'vpop3d: \((\w+),(\d+\.\d+\.\d+\.\d+)\) Authenticated', }
 );
-my $popDaemon = new Mail::POPRelay::Daemon(\%options);
 
 
 =head1 NAME
 
-poprelay_vpopd - POP Relay Daemon for Sendmail w/ VPOPd
+poprelay_vpopd - Agent for Vpopd
 
 
 =head1 SYNOPSIS
 
-./poprelay_vpopd
+./poprelay_vpopd config-file
 
 
 =head1 DESCRIPTION
 
-Run this script to start the relay access daemon for Sendmail running with
-a VPOP3d server.  Subtle changes may be required depending on your
-configuration.  This agent is fully compatible with virtual domains.
+This agent is suitable for working with the Vpopd POP daemon.
+
+Make sure to specify the correct config-file for your server configuration.
+Subtle modifications may be necessary in the config-file depending on your
+server configuration.
 
 
 =head1 DIAGNOSTICS
 
-die().  Will write to syslog eventually.
+croak().  Will write to syslog eventually.
 
 
 =head1 AUTHOR
@@ -57,4 +47,4 @@ Mail::POPRelay::Daemon(3pm), Mail::POPRelay(3pm), poprelay_cleanup(1p).
 
 =cut
 
-# $Id: poprelay_vpopd,v 1.2 2001/11/21 19:38:56 keith Exp $
+# $Id: poprelay_vpopd,v 1.4 2002/01/28 23:18:23 keith Exp $

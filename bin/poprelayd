@@ -8,11 +8,22 @@
 # pidfile: /var/run/poprelayd.pid
 
 # Source function library.
-. /etc/rc.d/init.d/functions
+if [ -f /etc/rc.d/init.d/functions ]
+then
+	. /etc/rc.d/init.d/functions
+else
+	echo "This init file is designed to work only with Redhat based distributions."
+	echo "Create a new init file or modify this one to run."
+	echo "Please send any init files to the author for incorporation into the next release."
+	exit 1
+fi
 
-# Path to the poprelayd binary.  
-# Change this value to match the correct agent for your configuration!
-poprelayd=/usr/bin/poprelay_ipop3d
+# Path to the poprelayd binary and config-file.
+poprelayd=
+
+# Comment the following two lines out
+echo "Edit this file and specify which agent and configuration file to use."
+exit 1
 
 process=`basename $poprelayd`;
 RETVAL=0
@@ -71,4 +82,4 @@ esac
 
 exit $RETVAL
 
-# $Id: poprelayd,v 1.2 2001/11/20 21:33:05 keith Exp $
+# $Id: poprelayd,v 1.2 2002/01/28 08:35:09 keith Exp $

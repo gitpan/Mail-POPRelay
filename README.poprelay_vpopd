@@ -1,16 +1,17 @@
 NAME
-    poprelay_vpopd - POP Relay Daemon for Sendmail w/ VPOPd
+    poprelay_vpopd - Agent for Vpopd
 
 SYNOPSIS
-    ./poprelay_vpopd
+    ./poprelay_vpopd config-file
 
 DESCRIPTION
-    Run this script to start the relay access daemon for Sendmail running
-    with a VPOP3d server. Subtle changes may be required depending on your
-    configuration. This agent is fully compatible with virtual domains.
+    This agent is suitable for working with the Vpopd POP daemon.
+
+    Make sure to specify the correct config-file for your server configuration. Subtle
+    modifications may be necessary in the config-file depending on your server configuration.
 
 DIAGNOSTICS
-    die(). Will write to syslog eventually.
+    croak(). Will write to syslog eventually.
 
 AUTHOR
     Keith Hoerling <keith@hoerling.com>

@@ -6,11 +6,13 @@ use vars qw[$VERSION @ISA ];
 
 use constant PRESERVE_MESSAGE => "# Above configuration will be preserved by POPRelay.\n";
 
-$VERSION = '1.0.1';
+$VERSION = '2.0.0';
 @ISA     = qw[Mail::Object ];
 
 $Mail::POPRelay::DEBUG = 0;
 
+
+# check any given hash for existence of certain keys
 # ---------
 sub __initTest {
 	my $self   = shift;
@@ -24,15 +26,47 @@ sub __initTest {
 
 
 # ---------
+sub initWithConfigFile {
+	my $configFileName = splice(@_, 1, 1);
+
+	die "Missing argument config-file." unless $configFileName;
+	die "$configFileName: No such file exists." unless -f $configFileName;
+
+	# slurp config file
+	undef $/;
+	open CONFIG, $configFileName or die "Unable to open config-file $configFileName: $!";
+	my $configFile = <CONFIG>;
+	close CONFIG;
+	$/ = "\n"; # disable slurp mode
+	
+	# create a hash from the config file
+	my $options;
+	$configFile =~ s,(.*?=)([\s\t]*)(.*),$1>$2'$3'\,,g;
+	eval "\$options = { $configFile };";
+	die "Corrupted config-file $configFileName: $@" if $@;
+
+	# store config file used
+	$_[0]->addAttributeWithValue('configFile', $configFileName) 
+		unless $_[0]->respondsTo('configFile');
+	
+	# initialize a POPRelay subclass w/ config file hash
+	return Mail::POPRelay::init(@_, $options);
+}
+
+
+# ---------
 sub init {
+	# call proper init if necessary
+	return Mail::POPRelay::initWithConfigFile(@_) unless ref $_[1];
+
 	my $myDefaults = {
-		mailLogFile           => '/var/log/maillog',
-		mailProgram           => 'sendmail',
-		mailProgramRestart    => 0,
-		makemapLocation       => '/usr/sbin/makemap',
-		mailRelayIsDatabase   => 0,
-		mailRelayDatabaseType => 'hash',
-		mailRelayDirectory    => '/var/spool/poprelay',
+		mailLogFile               => '/var/log/maillog',
+		mailProgram               => 'sendmail',
+		mailProgramRestart        => 0,
+		mailProgramRestartCommand => '/etc/init.d/%m restart',
+		mailRelayIsDatabase       => 0,
+		mailRelayDatabaseCommand  => '/usr/sbin/makemap hash %r < %r',
+		mailRelayDirectory        => '/var/spool/poprelay',
 	};
 	splice(@_, 2, 0, splice(@_, 1, 1, $myDefaults));
 	my $self = Mail::Object::init(@_);
@@ -40,29 +74,42 @@ sub init {
 	my %qualityAssurance = (
 		mailLogFile         => 'Mail log file',
 		mailProgram         => 'Mail program',
-		mailRelayDirectory  => 'Mail access relay directory',
-		mailRelayFile       => 'Mail access relay file',
-		mailRelayPeriod     => 'Mail access relay period',
-		makemapLocation     => 'Makemap location',
+		mailRelayDirectory  => 'Mail relay directory',
+		mailRelayFile       => 'Mail relay file',
+		mailRelayPeriod     => 'Mail relay period',
+		mailRelayFileFormat => 'Mail relay file format',
 	);
+	$self->__initTest(\%qualityAssurance);
 
-	$self->addAttributeWithValue('relayPreserve', $self->__generatePreserveList());
+	$self->addAttribute('relayPreserve') unless
+		$self->respondsTo('relayPreserve');
+
+	# parse special option variables
+	foreach ($self->{'mailRelayFileFormat'}, $self->{'mailProgramRestartCommand'}, $self->{'mailRelayDatabaseCommand'}) {
+		s,%m,$self->{'mailProgram'},gi;
+		s,%r,$self->{'mailRelayFile'},gi;
+	}
 
 	$self->__createRelayDirectory()
 		unless (-d $self->{'mailRelayDirectory'});
 
-	return $self->__initTest(\%qualityAssurance);
+	return $self;
 }
 
 
 # ---------
 sub restartMailProgram {
 	my $self = shift;
-	return `/etc/init.d/$self->{'mailProgram'} restart`;
+
+	$self->{'mailProgramRestartCommand'} =~ s,%m,$self->{'mailProgram'},ig;
+
+	print "o Restarting mail program: $self->{'mailProgramRestartCommand'}" 
+		if $Mail::POPRelay::DEBUG;
+	return `$self->{'mailProgramRestartCommand'}`;
 }
 
 
-# purge all relay addresses
+# purge all relay address files in spool
 # ---------
 sub wipeRelayDirectory {
 	my $self = shift;
@@ -76,7 +123,7 @@ sub wipeRelayDirectory {
 }
 
 
-# purge only expired relay addresses
+# purge only expired relay address files in spool
 # ---------
 sub cleanRelayDirectory {
 	my $self = shift;
@@ -88,7 +135,7 @@ sub cleanRelayDirectory {
 		my $modifyTime = (stat("$_"))[8] or die "Unable to stat $_: $!";
 
 		if (time > ($modifyTime + $self->{'mailRelayPeriod'})) {
-			printf "	`- removing %s (%d - %d < %d)\n", $_, time, ($modifyTime + $self->{'mailRelayDirectory'}, $self->{'mailRelayPeriod'}) if $Mail::POPRelay::DEBUG;
+			printf "\t`- removing %s (%d - %d < %d)\n", $_, time, ($modifyTime + $self->{'mailRelayDirectory'}, $self->{'mailRelayPeriod'}) if $Mail::POPRelay::DEBUG;
 			unlink($_) or die "Unable to unlink $_: $!";
 			push @purgeCount, $_;
 		}
@@ -97,17 +144,21 @@ sub cleanRelayDirectory {
 }
 
 
+# add relay address file to spool
 # ---------
 sub addRelayAddress {
 	my $self          = shift;
 	my $userName      = shift;
 	my $userIpAddress = shift;
 
-	open(OUT, ">$self->{'mailRelayDirectory'}/$userIpAddress") or die "Unable to open $self->{'mailRelayDirectory'}/$userIpAddress: $!";
-	print OUT $userName;
-	close(OUT);
+	if (!-e "$self->{'mailRelayDirectory'}/$userIpAddress") {
+		open(OUT, ">$self->{'mailRelayDirectory'}/$userIpAddress") or die "Unable to open $self->{'mailRelayDirectory'}/$userIpAddress: $!";
+		print OUT $userName;
+		close(OUT);
+		return $self;
+	}
 
-	return $self;
+	return 0;
 }
 
 
@@ -149,12 +200,15 @@ sub generateRelayFile {
 	$self->__createRelayDirectory()
 		unless (-d $self->{'mailRelayDirectory'});
 
+	# build relay list
+	my $entry;
+	print "o Building the relay file\n" if $Mail::POPRelay::DEBUG;
 	foreach (<$mailRelayDirectory/*>) {
-		s/.*\/(.+\d)$/$1/;
-		printf "    `- adding $_\n" if $Mail::POPRelay::DEBUG;
-		push @relayArray, ($self->{'mailRelayIsDatabase'})
-			? sprintf "$_\tRELAY",
-			: sprintf "$_";
+		s,.*/([\d\.]+)$,$1,;
+		print "\t`- adding $_\n" if $Mail::POPRelay::DEBUG;
+		$entry = $self->{'mailRelayFileFormat'};
+		$entry =~ s,%i,$_,g;
+		push @relayArray, $entry;
 	}
 
 	# recreate preserve list incase of change
@@ -163,16 +217,16 @@ sub generateRelayFile {
 	my $mailRelayFile = $self->{'mailRelayFile'};
 	open(RACCESS, ">$mailRelayFile") or die "Unable to open $mailRelayFile: $!";
 	print RACCESS $self->{'relayPreserve'}, PRESERVE_MESSAGE, join("\n", @relayArray);
-	close(RACCESS);
+	close RACCESS;
 
 	# generate relay database if needed
 	if ($self->{'mailRelayIsDatabase'}) {
 		print "o Generating relay database\n" if $Mail::POPRelay::DEBUG;
-		`$self->{'makemapLocation'} $self->{'mailRelayDatabaseType'} $self->{'mailRelayFile'} < $self->{'mailRelayFile'}`;
+		warn "Error generating relay database with command: $self->{'mailRelayDatabaseCommand'}\n" if
+			system($self->{'mailRelayDatabaseCommand'});
 	}
 
 	# restart mail server if needed 
-	# (functionally this shouldn't be here but it does clean things up a bit)
 	if ($self->{'mailProgramRestart'}) {
 		sleep(3);
 		print "o Restarting mail daemon\n" if $Mail::POPRelay::DEBUG;
@@ -187,6 +241,8 @@ sub generateRelayFile {
 
 __END__
 
+=cut
+
 =head1 NAME
 
 Mail::POPRelay - Dynamic Relay Access Control
@@ -194,157 +250,211 @@ Mail::POPRelay - Dynamic Relay Access Control
 
 =head1 DESCRIPTION
 
-Mobile POP Relay is designed as a framework to support
+Mail::POPRelay is designed as a framework to support
 relaying through many different types of POP and email
 servers. This software is useful for mobile users and is fully
 compatible with virtual domains.
 
-One of the main differences between this relay server and others is that
-neither modification of the POP server or mail program is needed.  This
-software should integrate seamlessly given the correct agent is provided.
-Each agent possesses the ability to specify certain variables in order to create
-a custom tailored relay agent per your servers setup.  Here is a list of the
-available options and their descriptions:
+One of the main differences between this software and others is that
+neither modification of the POP server or mail program is needed.
+Mail::POPRelay should integrate seamlessly with any server given the 
+correct agent and configuration are used.
 
-	mailLogFile           
-		Absolute location of the mail log file to monitor (tail).
-		Defaulted to '/var/log/maillog'
+Agents are executables that provide support for various POP servers.  
+Each agent possesses the ability to call functions from the Mail::POPRelay 
+framework, load configuration files and do whatever else is necessary to support
+dynamic relaying.
 
-	mailProgram
-		Mail program service name.  Used to restart the email server
-		if necessary through /etc/init.d.  Proper naming here should
-		reflect your mail service name in /etc/init.d.
-		Defaulted to 'sendmail'
+Configuration files allow the user (you) to specify options that are read by
+an agent.  These options inform the agent how to work with a server's configuration.
+Following is a list of available options and their descriptions:
 
-	mailProgramRestart
-		Should the mail server be restarted after adding to the relay file?
-		This shouldn't be necessary if using an access database style relay file.
-		Defaulted to '0'
 
-	makemapLocation
-		Absolute location of makemap used to create access database style
-		relay files.
-		Defaulted to '/usr/sbin/makemap'
 
-	mailRelayIsDatabase
-		Set accordingly if your mail relay file is a database.
-		Defaulted to '0'
+=over 8
 
-	mailRelayDatabaseType
-		Ignore this value if your mail relay file is not a database.
-		Specify the type for makemap if it is.
-		Defaulted to 'hash'
+=item mailLogFile           
 
-	mailRelayDirectory
-		A spool directory for creating program related relay tracking
-		files.
-		Defaulted to '/var/spool/poprelay'
-		
-	mailRelayFile
-		Absolute location of the mail access relay file.
-		No default value.
+Absolute location of the mail log file to watch for incoming logins.
+Defaulted to '/var/log/maillog'.
 
-	mailRelayPeriod
-		After a user successfully logs in we must set a period for
-		which he/she can relay mail.  Specify this here in seconds.
-		No default value.
+=item mailProgram
 
-Use the SYNOPSIS to help create your own agents.
+Set to the mail program service name.  This option's value will be replaced with the
+special %m variable that can be used where specified.
+Defaulted to 'sendmail'.
+
+=item mailProgramRestart
+
+Set to '1' if the mail server must be restarted after modifying the relay file.
+This shouldn't be necessary if using an access database style relay file.
+Defaulted to '0'.
+
+=item mailProgramRestartCommand
+
+Set to the command required for restarting your email server.  
+Special variables %m and %r can be used in this string.
+Defaulted to '/etc/init.d/%m restart'.
+
+=item mailRelayIsDatabase
+
+Set accordingly if your mail relay file is a database.
+Defaulted to '0'.
+
+=item makemapLocation
+
+Usage is deprecated.  Reference mailRelayDatabaseCommand.
+
+=item mailRelayDatabaseType
+
+Usage is deprecated.  Reference mailRelayDatabaseCommand.
+
+=item mailRelayDatabaseCommand
+
+Set to the command required for creating the relay database.
+Special variables %m and %r can be used in this string.
+Defaulted to '/usr/sbin/makemap hash %r < %r'.
+
+=item mailRelayDirectory
+
+Absolute location of the spool directory used to create relay tracking files.
+Defaulted to '/var/spool/poprelay'.
+
+=item mailRelayFile
+
+Absolute location of the mail access relay file.  This option's value will be replaced with the
+special %r variable that can be used where specified.
+No default value.
+
+=item mailRelayFileFormat
+
+Set to the format of your relay file.  Special variables %m, %r and %i may be used in this string.
+%i is replaced with the current IP address allow relaying access.
+Defaulted to '%i RELAY' if mail relay file is set to '1' or '%i' if not.
+
+=item mailRelayPeriod
+
+After a user successfully logs in we must set a period for
+which he/she can relay mail.  Specify this value in seconds.
+No default value.
+
+=back
+
+Use the SYNOPSIS to help create your own agents and configuration files.
+
+
+=head1 FLOW
+
+=item 1 An agent is executed with a configuration file
+
+=item 2 The mailLogFile is monitored for instances of mailLogRegExp (loop)
+
+=item 3 A "mailRelayDirectory/(authenticated IP)" file is created if an instance is found
+
+=item 4 The mailRelayFile is updated based off the mailRelayDirectory spool
+
+=item 5 The mailRelayDatabaseCommand is executed if the mailRelayIsDatabase option is set
+
+=item 6 The mailProgramRestartCommand is executed if the mailProgramRestart option is set
+
+	
+Note:  The config-file is reloaded when the agent receives a HUP signal.
+	
 
 =head1 SYNOPSIS
 
-So how do I create my own agents?  
-Simple.  Create a file in the ./bin directory for your agent and 
-follow the instructions below.
 
-1) Copy this header into your agent file:
+=head2 Creating Custom Agents
 
------ BEGIN HEADER -----
+=item o Create a file in the ./bin directory for your agent
 
-use Mail::POPRelay;
+=item o Copy this header into your agent file:
 
-# Mail::POPRelay is designed to be subclassed.
+	----- BEGIN HEADER -----
+	use strict;
+	use Mail::POPRelay;
+	use vars qw[@ISA ];
 
-use strict;
+	# Mail::POPRelay is designed to be subclassed.
+	@ISA = qw[Mail::POPRelay ];
+	----- END HEADER -----
 
-use Mail::POPRelay;
+=over 8
 
-use vars qw[@ISA ];
+=item o Create a regular expression 
 
-@ISA = qw[Mail::POPRelay ];
+This is done to match user authentication log entries for the POP server you're adding 
+support and is necessary for dynamic relaying.  The regular expression must place the 
+authenticating user name in $1 and IP address in $2.  Monitor the mailLogFile for
+incoming user authentication entries if unsure about its format.
 
------ SNIP -----
+=back
+
+=item o Use this conventional template to instantiate Mail::POPRelay
+
+	----- BEGIN TEMPLATE -----
+	my $popDaemon = new Mail::POPRelay::Daemon(
+		$ARGV[0], # config-file to use
+		{ mailLogRegExp    => 'a regular expression', 
+		  overridingOption => 'a value',
+		}
+	};
+	----- END TEMPLATE -----
+
+=over 8
+
+=item o Overriding options
+
+Any options specified as parameters to Mail::POPRelay::Daemon will override those
+in the config-file.
+
+=item o Calling additional methods
+
+It is possible to call other methods from the POPRelay class in your agent.
+Reference the METHODS section below.
+
+	
+
+=head2 Creating Custom Configuration Files
+
+=item o Create a file in the ./conf directory for your configuration
+
+=item o Specify one option and value per line
+
+Each line is in the format "optionName = value".  Comment lines begin with a # symbol.
+Reference the DESCRIPTION section above for a complete list of options and their meanings.
 
 
-2) Create a configuration for the agent.
-
-Each agent should work w/ specific POP and Mail daemon configurations.
-To accommodate these configurations, each agent combines different 
-options described above in DESCRIPTION.
-
-As a good foundation to get started, lets re-create the existing generic iPOP3 / Sendmail 
-configuration that already exists in the ./bin directory.  
-
-Copy the below agent body into your agent file:
-
------ BEGIN AGENT BODY -----
-
-my %options = (
-	mailRelayDirectory    => '/var/spool/poprelay',
-	mailRelayPeriod       => 86400, # in seconds
-	mailLogRegExp         => 'ipop3d\[\d+\]:.+user=(\w+) host=.*\[(\d+\.\d+\.\d+\.\d+)\] nmsgs=',
-
-	# redhat 7.0 w/ access db
-	mailRelayFile         => '/etc/mail/access',
-	mailRelayIsDatabase   => 1,
-	mailRelayDatabaseType => 'hash',
-);
-my $popDaemon = new Mail::POPRelay::Daemon(\%options);
-
------ SNIP -----
-
-
-3) Modify / add or delete agent options
-
-It may be necessary to change the relaying period.  Simply modify
-the value of "mailRelayPeriod" from 86400 to your own value.
-
-Maybe you aren't running a database compatible mail daemon.  This might require
-switching the value of "mailRelayIsDatabase" from 1 to 0 and adding the option
-"mailProgramRestart => 1".
-
-Modification of the mailLogRegExp option may be necessary.  Scan your 
-mail log file for the POP authentication line and set a matching regular expression
-for the mailLogRegExp value.  The user name must end up in $1 and the relay host in $2.
+=back
 
 
 =head1 METHODS
 
-=over 4
+=over 8
 
-=item	$popRelay->wipeRelayDirectory();
+=item $popRelay->wipeRelayDirectory();
 
-	Remove all relay access files
+Remove all relay access files in the spool (mailRelayDirectory).
 
-=item	$popRelay->cleanRelayDirectory();
+=item $popRelay->cleanRelayDirectory();
 
-	Remove expired access files
+Remove expired access files in the spool (mailRelayDirectory).
 
-=item	$popRelay->generateRelayFile();
+=item $popRelay->generateRelayFile();
 
-	Create relay file in relay directory.  An attempt to create 
-	the relay directory will be made if it doesn't already exist.
-	This method now also handles restarting the mail program and/or
-	creating the access db file if necessary.
+Create and write out a relay file based from the access files 
+in the spool (mailRelayDirectory).  An attempt to create the spool 
+directory will be made if it doesn't already exist.  This method now 
+also handles restarting the mail program and/or creating the access 
+database file if necessary.
 
-=item	$popRelay->restartMailProgram();
+=item $popRelay->restartMailProgram();
 
-	Use is deprecated.  Not absolutely necessary anymore.  Read above.
+Use is deprecated.  Not absolutely necessary anymore.  Read above.
 
-=item	$popRelay->addRelayAddress('User Name', 'IP Address')
+=item $popRelay->addRelayAddress('User Name', 'IP Address')
 
-	Adds a user to relay mail for.
-
+Adds a relay access file to the spool (mailRelayDirectory).
 
 =back
 
@@ -356,14 +466,25 @@ die().  Will write to syslog eventually.
 
 =head1 CONTRIBUTIONS
 
+=over 8
+
 =item John Beppu <beppu@lbox.org>
 
-	Found a bug in the signal handlers.  Thanks for looking over my code ;)
+Found a bug in the signal handlers.  Thanks for looking over my code ;)
 
 =item Jefferson S. M <linuxman@trendservices.com.br>
 
-	Provided a testing facility for the ipop3d_vpopd agent.
+Verified and tested the ipop3d_vpopd agent.
 
+=item Dave Doeppel <dave@hyperburn.com>
+
+Verified and tested integration with the Exim mailer.
+
+=item Fuat Gozetepe <turk@lbox.org>
+
+Verified and tested integration with Slackware.
+
+=back
 
 =head1 AUTHOR
 
@@ -376,4 +497,4 @@ Mail::POPRelay::Daemon(3pm), poprelay_cleanup(1p), poprelay_ipop3d(1p).
 
 =cut
 
-# $Id: POPRelay.pm,v 1.8 2001/11/26 18:12:58 keith Exp $
+# $Id: POPRelay.pm,v 1.8 2002/02/23 23:09:40 keith Exp $
