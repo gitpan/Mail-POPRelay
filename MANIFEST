@@ -1,0 +1,17 @@
+Changes
+HOWTO
+INSTALL
+MANIFEST
+Makefile.PL
+Object.pm
+POPRelay.pm
+POPRelay/Daemon.pm
+README
+README.poprelay_cleanup
+README.poprelay_ipop3d
+README.poprelay_vpopd
+bin/poprelay_cleanup
+bin/poprelay_ipop3d
+bin/poprelay_vpopd
+bin/poprelayd
+test.pl

@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+
+use strict;
+use Mail::POPRelay::Daemon;
+
+
+# main
+# ---------
+my %options = (
+	mailRelayDirectory    => '/var/spool/poprelay',
+	mailRelayPeriod       => 86400, # in seconds
+	mailLogRegExp         => 'ipop3d\[\d+\]:.+user=(\w+) host=.*\[(\d+\.\d+\.\d+\.\d+)\] nmsgs=',
+
+	# redhat 7.0 w/ access db
+	mailRelayFile         => '/etc/mail/access',
+	mailRelayIsDatabase   => 1,
+	mailRelayDatabaseType => 'hash',
+
+	# debian configuration w/ access db
+#	mailRelayFile         => '/etc/mail/relay-domains',
+#	mailLogFile           => '/var/log/mail.log',
+#	mailRelayIsDatabase   => 1,
+#	mailRelayDatabaseType => 'hash',
+
+	# redhat 7.0 w/o access db
+#	mailProgramRestart => 1,
+#	mailRelayFile      => '/etc/mail/ip_allow',
+
+	# debian configuration w/o access db
+#	mailProgramRestart => 1,
+#	mailRelayFile      => '/etc/mail/relay-domains',
+#	mailLogFile        => '/var/log/mail.log',
+);
+my $popDaemon = new Mail::POPRelay::Daemon(\%options);
+
+
+=head1 NAME
+
+poprelay_ipop3d - POP Relay Daemon for Sendmail w/ IPOP3d
+
+
+=head1 SYNOPSIS
+
+./poprelay_ipop3d
+
+
+=head1 DESCRIPTION
+
+Run this script to start the relay access daemon for Sendmail running with
+an IPOP3d POP server.  Subtle changes may be required depending on your
+configuration.  
+
+
+=head1 DIAGNOSTICS
+
+die().  Will write to syslog eventually.
+
+
+=head1 AUTHOR
+
+Keith Hoerling <keith@hoerling.com>
+
+
+=head1 SEE ALSO
+
+Mail::POPRelay::Daemon(3pm), Mail::POPRelay(3pm), poprelay_cleanup(1p).
+
+=cut
+
+# $Id: poprelay_ipop3d,v 1.3 2001/11/14 01:23:27 keith Exp $

@@ -1,0 +1,20 @@
+NAME
+    poprelay_ipop3d - POP Relay Daemon for Sendmail w/ IPOP3d
+
+SYNOPSIS
+    ./poprelay_ipop3d
+
+DESCRIPTION
+    Run this script to start the relay access daemon for Sendmail running
+    with an IPOP3d POP server. Subtle changes may be required depending on
+    your configuration.
+
+DIAGNOSTICS
+    die(). Will write to syslog eventually.
+
+AUTHOR
+    Keith Hoerling <keith@hoerling.com>
+
+SEE ALSO
+    Mail::POPRelay::Daemon(3pm), Mail::POPRelay(3pm), poprelay_cleanup(1p).
+

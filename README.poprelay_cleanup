@@ -1,0 +1,22 @@
+NAME
+    poprelay_cleanup - Perform Cleanup on the Mail Relay Directory
+
+SYNOPSIS
+    ./poprelay_cleanup
+
+DESCRIPTION
+    Run this script in a crontab to cleanup the mail relay directory and
+    perform other necessary actions such as restarting the mail server
+    and/or recreating the access database. Base the trigger interval on your
+    mail relay period.
+
+DIAGNOSTICS
+    die(). Will write to syslog eventually.
+
+AUTHOR
+    Keith Hoerling <keith@hoerling.com>
+
+SEE ALSO
+    Mail::POPRelay::Daemon(3pm), Mail::POPRelay(3pm), poprelay_cleanup(1p),
+    poprelay_ipop3d(1p), cron(8), crontab(5).
+
