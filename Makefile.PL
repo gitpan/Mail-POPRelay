@@ -23,7 +23,7 @@ WriteMakefile(
 # ---------
 sub MY::postamble {
 '
-readme : README.poprelay_cleanup README.poprelay_ipop3d README.poprelay_vpopd README
+readme : README.poprelay_cleanup README.poprelay_ipop3d README.poprelay_qpopper README.poprelay_vpopd README
 
 README : POPRelay.pm
 	pod2text POPRelay.pm > README
@@ -34,6 +34,9 @@ README.poprelay_cleanup : bin/poprelay_cleanup
 README.poprelay_ipop3d : bin/poprelay_ipop3d
 	pod2text bin/poprelay_ipop3d > README.poprelay_ipop3d
 
+README.poprelay_qpopper : bin/poprelay_qpopper
+	pod2text bin/poprelay_qpopper > README.poprelay_qpopper
+
 README.poprelay_vpopd : bin/poprelay_vpopd
 	pod2text bin/poprelay_vpopd > README.poprelay_vpopd
 
@@ -41,4 +44,4 @@ README.poprelay_vpopd : bin/poprelay_vpopd
 ';
 }
 
-# $Id: Makefile.PL,v 1.2 2002/01/28 23:18:18 keith Exp $
+# $Id: Makefile.PL,v 1.2 2002/08/20 01:25:37 keith Exp $

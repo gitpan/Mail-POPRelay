@@ -12,9 +12,11 @@ README.poprelay_ipop3d
 README.poprelay_vpopd
 bin/poprelay_cleanup
 bin/poprelay_ipop3d
+bin/poprelay_qpopper
 bin/poprelay_vpopd
 bin/poprelayd
 conf/debian
 conf/redhat
 conf/slackware
+conf/suse
 test.pl

@@ -6,7 +6,7 @@ use vars qw[$VERSION @ISA ];
 
 use constant PRESERVE_MESSAGE => "# Above configuration will be preserved by POPRelay.\n";
 
-$VERSION = '2.0.1';
+$VERSION = '2.1.1';
 @ISA     = qw[Mail::Object ];
 
 $Mail::POPRelay::DEBUG = 0;
@@ -489,6 +489,10 @@ Verified and tested integration with Slackware.
 Found a race condition in Daemon.pm where relaying information could have
 been lost.
 
+=item Sven-Oliver Stietzel <dev@netshake.de>
+
+Added a config file for Suse Linux and Qpopper agent.
+
 =back
 
 =head1 AUTHOR
@@ -502,4 +506,4 @@ Mail::POPRelay::Daemon(3pm), poprelay_cleanup(1p), poprelay_ipop3d(1p).
 
 =cut
 
-# $Id: POPRelay.pm,v 1.8 2002/02/23 23:09:40 keith Exp $
+# $Id: POPRelay.pm,v 1.3 2002/08/20 01:26:35 keith Exp $

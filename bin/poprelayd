@@ -82,4 +82,4 @@ esac
 
 exit $RETVAL
 
-# $Id: poprelayd,v 1.2 2002/01/28 08:35:09 keith Exp $
+# $Id: poprelayd,v 1.1.1.1 2002/05/28 07:32:59 keith Exp $

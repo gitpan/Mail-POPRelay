@@ -47,4 +47,4 @@ Mail::POPRelay::Daemon(3pm), Mail::POPRelay(3pm), poprelay_cleanup(1p).
 
 =cut
 
-# $Id: poprelay_vpopd,v 1.4 2002/01/28 23:18:23 keith Exp $
+# $Id: poprelay_vpopd,v 1.1.1.1 2002/05/28 07:32:59 keith Exp $
